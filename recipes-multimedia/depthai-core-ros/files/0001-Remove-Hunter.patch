@@ -1,22 +1,34 @@
-From d7f9c2fb0d2609aef7e0bb266301f8054b9d700a Mon Sep 17 00:00:00 2001
-From: Joel Winarske <joel.winarsk@gmail.com>
-Date: Thu, 16 Mar 2023 06:31:42 -0700
+From 3dbf42414e27e5e63669418bc1399a0804971b36 Mon Sep 17 00:00:00 2001
+From: Stephen Street <stephen@redrocketcomputing.com>
+Date: Fri, 6 Dec 2024 15:30:52 -0800
 Subject: [PATCH] Remove Hunter
 
+Upstream-Status: Denied
+
+Signed-off-by: Stephen Street <stephen@redrocketcomputing.com>
 Signed-off-by: Joel Winarske <joel.winarsk@gmail.com>
 ---
- CMakeLists.txt                  | 126 +++++++++++++++-----------------
+ CMakeLists.txt                  | 128 +++++++++++++++-----------------
  cmake/depthaiConfig.cmake.in    |   3 -
- cmake/depthaiDependencies.cmake |  21 ++----
- examples/CMakeLists.txt         | 107 ---------------------------
+ cmake/depthaiDependencies.cmake |  28 ++-----
+ examples/CMakeLists.txt         | 124 -------------------------------
  tests/CMakeLists.txt            |  91 +++--------------------
- 5 files changed, 77 insertions(+), 271 deletions(-)
+ 5 files changed, 78 insertions(+), 296 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 158febfb..ffea35ef 100644
+index 9594a4755..99b860d54 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -30,12 +30,6 @@ else()
+@@ -8,7 +8,7 @@ endif()
+ 
+ set(HUNTER_SKIP_PACKAGE_nlohmann_json OFF)
+ set(BUILD_SHARED_LIBS ON)
+-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
++#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+ # Early options
+ option(DEPTHAI_ENABLE_LIBUSB "Enable usage of libusb and interaction with USB devices" ON)
+@@ -37,12 +37,6 @@ else()
      message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
  endif()
  
@@ -29,7 +41,7 @@ index 158febfb..ffea35ef 100644
  
  # Move binary dir if windows, to shorten the path
  if(WIN32)
-@@ -280,6 +274,31 @@ else()
+@@ -305,6 +299,31 @@ else()
      target_compile_features(${TARGET_CORE_NAME} INTERFACE cxx_std_14)
  endif()
  
@@ -61,7 +73,7 @@ index 158febfb..ffea35ef 100644
  # First specify options
  option(DEPTHAI_BUILD_TESTS "Build tests" OFF)
  option(DEPTHAI_BUILD_EXAMPLES "Build examples - Requires OpenCV library to be installed" OFF)
-@@ -305,61 +324,23 @@ endif()
+@@ -331,61 +350,23 @@ endif()
  # Set constant
  set(DEPTHAI_RESOURCES_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/resources")
  
@@ -136,7 +148,7 @@ index 158febfb..ffea35ef 100644
  
  message(STATUS "LIST OF RESOURCE COMPILED FILES: ${RESOURCE_COMPILED_FILES}")
  
-@@ -430,15 +411,14 @@ target_link_libraries(${TARGET_CORE_NAME}
+@@ -456,15 +437,14 @@ target_link_libraries(${TARGET_CORE_NAME}
      PRIVATE
          XLink
          Threads::Threads
@@ -153,8 +165,8 @@ index 158febfb..ffea35ef 100644
 -set(DEPTHAI_DEVICE_VERSION "${DEPTHAI_DEVICE_SIDE_COMMIT}")
  target_compile_definitions(${TARGET_CORE_NAME}
      PRIVATE
-         # XLink required define
-@@ -530,6 +510,26 @@ if(DEPTHAI_OPENCV_SUPPORT)
+         # Add depthai-device version
+@@ -560,6 +540,26 @@ if(DEPTHAI_OPENCV_SUPPORT)
              target_clangformat_setup(${TARGET_OPENCV_NAME} "")
          endif()
  
@@ -181,7 +193,7 @@ index 158febfb..ffea35ef 100644
          # Add to list of targets to export and install
          list(APPEND targets_to_export ${TARGET_OPENCV_NAME})
  
-@@ -618,19 +618,15 @@ configure_file("cmake/${PROJECT_NAME}Dependencies.cmake" ${PROJECT_NAME}Dependen
+@@ -719,19 +719,15 @@ configure_file("cmake/${PROJECT_NAME}Dependencies.cmake" ${PROJECT_NAME}Dependen
  write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake VERSION ${PROJECT_VERSION} COMPATIBILITY AnyNewerVersion)
  
  # Configure config file (one for exporting build directory, one for installation)
@@ -201,7 +213,7 @@ index 158febfb..ffea35ef 100644
  endif()
  
  # Export to CMake registry if specified
-@@ -657,8 +653,6 @@ if(DEPTHAI_INSTALL)
+@@ -758,8 +754,6 @@ if(DEPTHAI_INSTALL)
      install(DIRECTORY "${DEPTHAI_SHARED_3RDPARTY_INCLUDE}/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${DEPTHAI_SHARED_3RDPARTY_HEADERS_PATH}")
      # Install depthai-bootloader-shared public headers
      install(DIRECTORY "${DEPTHAI_BOOTLOADER_SHARED_PUBLIC_INCLUDE}/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
@@ -211,7 +223,7 @@ index 158febfb..ffea35ef 100644
      if(NOT DEPTHAI_BINARIES_RESOURCE_COMPILE)
          install(DIRECTORY "${DEPTHAI_RESOURCES_OUTPUT_DIR}/" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
 diff --git a/cmake/depthaiConfig.cmake.in b/cmake/depthaiConfig.cmake.in
-index 98309545..bcae1a18 100644
+index 98309545b..bcae1a18c 100644
 --- a/cmake/depthaiConfig.cmake.in
 +++ b/cmake/depthaiConfig.cmake.in
 @@ -7,9 +7,6 @@ set(DEPTHAI_ENABLE_BACKWARD @DEPTHAI_ENABLE_BACKWARD@)
@@ -225,14 +237,18 @@ index 98309545..bcae1a18 100644
  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Dependencies.cmake")
  
 diff --git a/cmake/depthaiDependencies.cmake b/cmake/depthaiDependencies.cmake
-index d995de9d..0683601b 100644
+index 771cffbdb..2508f4b63 100644
 --- a/cmake/depthaiDependencies.cmake
 +++ b/cmake/depthaiDependencies.cmake
-@@ -8,35 +8,24 @@ if(CONFIG_MODE)
+@@ -9,42 +9,24 @@ if(CONFIG_MODE)
      set(_QUIET "QUIET")
  else()
      set(DEPTHAI_SHARED_LIBS ${BUILD_SHARED_LIBS})
--    hunter_add_package(nlohmann_json)
+-    if(HUNTER_SKIP_PACKAGE_nlohmann_json)
+-        find_package(nlohmann_json)
+-    else()
+-        hunter_add_package(nlohmann_json)
+-    endif()
 -    if(NOT DEPTHAI_XLINK_LOCAL)
 -        hunter_add_package(XLink)
 -    endif()
@@ -245,13 +261,16 @@ index d995de9d..0683601b 100644
 -        hunter_add_package(Backward)
 -    endif()
 -    hunter_add_package(libnop)
+-    if(DEPTHAI_PCL_SUPPORT)
+-        hunter_add_package(jsoncpp)
+-    endif()
++    find_package(nlohmann_json)
++    find_package(jsoncpp)
  endif()
  
  # If library was build as static, find all dependencies
  if(NOT CONFIG_MODE OR (CONFIG_MODE AND NOT DEPTHAI_SHARED_LIBS))
  
-+    find_package(PkgConfig REQUIRED)
-+
      # BZip2 (for bspatch)
 -    find_package(BZip2 ${_QUIET} CONFIG REQUIRED)
 +    find_package(BZip2 ${_QUIET} REQUIRED)
@@ -270,13 +289,14 @@ index d995de9d..0683601b 100644
      # spdlog for library and device logging
      find_package(spdlog ${_QUIET} CONFIG REQUIRED)
 diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
-index 8b90a890..0ea93920 100644
+index f3c0762b8..9b2e31b73 100644
 --- a/examples/CMakeLists.txt
 +++ b/examples/CMakeLists.txt
-@@ -88,113 +88,6 @@ endfunction()
+@@ -96,130 +96,6 @@ endfunction()
+ 
  # Create a custom target which runs all examples for 10 seconds max, and check if they executed without errors
  
- 
+-
 -
 -# Add any custom binary data using the following snippet
 -## # Hunter test data download
@@ -376,6 +396,22 @@ index 8b90a890..0ea93920 100644
 -    LOCATION concat_model
 -)
 -
+-# blur model
+-hunter_private_data(
+-    URL "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/blur_simplified_openvino_2021.4_6shave.blob"
+-    SHA1 "14d543bbaceffa438071f83be58ad22a07ce33ee"
+-    FILE "blur_simplified_openvino_2021.4_6shave.blob"
+-    LOCATION blur_model
+-)
+-
+-# diff model
+-hunter_private_data(
+-    URL "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/diff_openvino_2022.1_6shave.blob"
+-    SHA1 "fe9600e617d222f986a699f18e77e80ce2485000"
+-    FILE "diff_openvino_2022.1_6shave.blob"
+-    LOCATION diff_model
+-)
+-
 -# normalization model
 -hunter_private_data(
 -    URL "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/normalize_openvino_2021.4_4shave.blob"
@@ -388,7 +424,7 @@ index 8b90a890..0ea93920 100644
  
  # bootloader
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
-index c71936f9..59f62b12 100644
+index 89fe6f3fc..b1aa1207b 100644
 --- a/tests/CMakeLists.txt
 +++ b/tests/CMakeLists.txt
 @@ -3,7 +3,6 @@ include(CTest)
@@ -399,7 +435,7 @@ index c71936f9..59f62b12 100644
  find_package(Catch2 CONFIG REQUIRED)
  
  # Create environments for usb & poe labels
-@@ -126,72 +125,6 @@ function(dai_test_compile_definitions)
+@@ -127,72 +126,6 @@ function(dai_test_compile_definitions)
      endif()
  endfunction()
  
@@ -472,7 +508,7 @@ index c71936f9..59f62b12 100644
  
  # Add tests
  dai_add_test(color_camera_node_test src/color_camera_node_test.cpp)
-@@ -200,17 +133,17 @@ dai_add_test(pipeline_test src/pipeline_test.cpp)
+@@ -201,17 +134,17 @@ dai_add_test(pipeline_test src/pipeline_test.cpp)
  dai_add_test(logging_test src/logging_test.cpp)
  
  dai_add_test(neural_network_test src/neural_network_test.cpp)
@@ -498,7 +534,7 @@ index c71936f9..59f62b12 100644
  )
  
  # Bootloader configuration tests
-@@ -232,11 +165,11 @@ dai_add_test(multiple_devices_test src/multiple_devices_test.cpp)
+@@ -242,11 +175,11 @@ dai_add_test(multiple_devices_test src/multiple_devices_test.cpp)
  
  # Filesystem test
  dai_add_test(filesystem_test src/filesystem_test.cpp)
@@ -513,15 +549,12 @@ index c71936f9..59f62b12 100644
  
  # Bootloader version tests
  dai_add_test(bootloader_version_test src/bootloader_version_test.cpp)
-@@ -259,7 +192,7 @@ if(DEPTHAI_STABILITY_TEST_DEBUG)
+@@ -274,7 +207,7 @@ if(DEPTHAI_STABILITY_TEST_DEBUG)
  else()
-     target_link_libraries(stability_stress_test PRIVATE depthai::core)
+     target_link_libraries(stability_stress_test PRIVATE depthai::core Threads::Threads)
  endif()
 -target_compile_definitions(stability_stress_test PRIVATE BLOB_PATH="${tiny_yolo_v4_2021-4_4shave_blob}")
 +target_compile_definitions(stability_stress_test PRIVATE BLOB_PATH="${test_tiny_yolo_v4_2021-4_4shave_blob}")
  # add_test(stability_stress_test stability_stress_test)
  # add_test(stability_stress_test_poe stability_stress_test)
  # set_tests_properties(stability_stress_test PROPERTIES ENVIRONMENT "UBSAN_OPTIONS=halt_on_error=1;DEPTHAI_PROTOCOL=usb" LABELS stability_usb)
--- 
-2.39.2
-

@@ -26,13 +26,14 @@ DEPENDS += "\
     xz \
     zlib \
     jsoncpp \
+    ghc-filesystem \
     "
 
 
-SRCREV = "1aeacdd611ca20089d4bdac7ac5e6a6e56eb7906"
+SRCREV = "ef1481fc2c76740dffb311e8a69bd13095bd2b0d"
 
 DEPTHAI_BOOTLOADER_VERSION = "0.0.28"
-DEPTHAI_DEVICE_SIDE_COMMIT = "24a3b465b979de3f69410cd225914d8bd029f3ba"
+DEPTHAI_DEVICE_SIDE_COMMIT = "9ed7c9ae4c232ff93a3500a585a6b1c00650e22c"
 
 DEPTHAI_FWP_BOOTLOADER_FILENAME = "depthai-bootloader-fwp-${DEPTHAI_BOOTLOADER_VERSION}.tar.xz"
 DEPTHAI_FWP_DEVICE_SIDE_FILENAME = "depthai-device-fwp-${DEPTHAI_DEVICE_SIDE_COMMIT}.tar.xz"
@@ -67,7 +68,7 @@ SRC_URI = "gitsm://github.com/luxonis/depthai-core.git;protocol=https;nobranch=1
 
 # Firmware Packages
 SRC_URI[bootloader-fwp.sha256sum]         = "e7143bbe3d012edd9d81940a0be520e81564708b7b4ec79b071d701758bb828c"
-SRC_URI[device-fwp.sha256sum]             = "37005e681abfaef26fc7ee5e820cb55fead916ec48e6ed85133d34c9368df4fa"
+SRC_URI[device-fwp.sha256sum]             = "dac8cfb1babbca54c0ddcc092f8ad08aefc35812db455dff7283db76740e76af"
 
 # Example Models
 SRC_URI[mobilenet_blob.sha256sum]         = "5ae9cb636bfa40df02c2ca3e64bc68a6690abd8a147903d4580aea6b6feb9c1c"
@@ -112,7 +113,7 @@ EXTRA_OECMAKE += "\
     -D DEPTHAI_BOOTLOADER_VERSION=${DEPTHAI_BOOTLOADER_VERSION} \
     -D DEPTHAI_DEVICE_VERSION=${DEPTHAI_DEVICE_SIDE_COMMIT} \
     \
-    -D DEPTHAI_FWP_DL_PATH="${WORKDIR}" \
+    -D DEPTHAI_FWP_DL_PATH="${UNPACKDIR}" \
     -D DEPTHAI_FWP_BOOTLOADER_FILENAME="${DEPTHAI_FWP_BOOTLOADER_FILENAME}" \
     -D DEPTHAI_FWP_DEVICE_SIDE_FILENAME="${DEPTHAI_FWP_DEVICE_SIDE_FILENAME}" \
     \
@@ -120,6 +121,7 @@ EXTRA_OECMAKE += "\
     -D CMAKE_SKIP_RPATH=TRUE \
     -D DEPTHAI_CLANG_FORMAT=OFF \
     -D DEPTHAI_ENABLE_BACKWARD=ON \
+    -D DEPTHAI_ENABLE_CURL=OFF \
     \
     ${@bb.utils.contains('PACKAGECONFIG', 'shared', '-DCMAKE_POSITION_INDEPENDENT_CODE=ON', '-DCMAKE_POSITION_INDEPENDENT_CODE=OFF', d)} \
     \
@@ -150,18 +152,18 @@ do_install:append() {
 
         install -d ${D}${datadir}/luxonis/examples
 
-        install -m 0644 ${WORKDIR}/mobilenet-ssd_openvino_2021.4_6shave.blob                ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/yolo-v3-tiny-tf_openvino_2021.4_6shave.blob              ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob              ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/mobilenet-ssd_openvino_2021.4_5shave.blob                ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/mobilenet-ssd_openvino_2021.4_8shave.blob                ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/construction_vest.mp4                                    ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/depthai_calib.json                                       ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/depthai_v5.calib                                         ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/BW1098OBC.json                                           ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/person-detection-retail-0013_openvino_2021.4_7shave.blob ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/concat_openvino_2021.4_6shave.blob                       ${D}${datadir}/luxonis/examples
-        install -m 0644 ${WORKDIR}/normalize_openvino_2021.4_4shave.blob                    ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/mobilenet-ssd_openvino_2021.4_6shave.blob                ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/yolo-v3-tiny-tf_openvino_2021.4_6shave.blob              ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob              ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/mobilenet-ssd_openvino_2021.4_5shave.blob                ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/mobilenet-ssd_openvino_2021.4_8shave.blob                ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/construction_vest.mp4                                    ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/depthai_calib.json                                       ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/depthai_v5.calib                                         ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/BW1098OBC.json                                           ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/person-detection-retail-0013_openvino_2021.4_7shave.blob ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/concat_openvino_2021.4_6shave.blob                       ${D}${datadir}/luxonis/examples
+        install -m 0644 ${UNPACKDIR}/normalize_openvino_2021.4_4shave.blob                    ${D}${datadir}/luxonis/examples
 
         install -d ${D}${bindir}/luxonis/examples
         find ${B}/examples -type f -perm /a+x -exec cp {} ${D}${bindir}/luxonis/examples \;
@@ -171,15 +173,15 @@ do_install:append() {
 
         install -d ${D}${datadir}/luxonis/tests
 
-        install -m 0644 ${WORKDIR}/mobilenet-ssd_openvino_2021.2_8shave.blob                ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2020.3_4shave.blob      ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2020.4_4shave.blob      ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2021.1_4shave.blob      ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2021.2_4shave.blob      ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2021.3_4shave.blob      ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2021.4.2_4shave.blob    ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/text-image-super-resolution-0001_2022.1.0_4shave.blob    ${D}${datadir}/luxonis/tests
-        install -m 0644 ${WORKDIR}/yolo-v4-tiny-tf_openvino_2021.4_4shave.blob              ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/mobilenet-ssd_openvino_2021.2_8shave.blob                ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2020.3_4shave.blob      ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2020.4_4shave.blob      ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2021.1_4shave.blob      ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2021.2_4shave.blob      ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2021.3_4shave.blob      ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2021.4.2_4shave.blob    ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/text-image-super-resolution-0001_2022.1.0_4shave.blob    ${D}${datadir}/luxonis/tests
+        install -m 0644 ${UNPACKDIR}/yolo-v4-tiny-tf_openvino_2021.4_4shave.blob              ${D}${datadir}/luxonis/tests
 
         install -d ${D}${bindir}/luxonis/tests
         find ${B}/tests -type f -perm /a+x -exec cp {} ${D}${bindir}/luxonis/tests \;
@@ -188,9 +190,10 @@ do_install:append() {
     #QA Issue: File /usr/src/debug/depthai-core-ros/2.26.1/__cmrc_depthai-resources/lib.cpp in package depthai-core-ros-src contains reference to TMPDIR
     sed -i -e "s#${WORKDIR}##g" ${B}/__cmrc_depthai-resources/lib.cpp
     #QA Issue: File /usr/src/debug/depthai-core-ros/2.26.1/__cmrc_depthai-resources/intermediate/depthai-bootloader-fwp-0.0.28.tar.xz.cpp in package depthai-core-ros-src contains reference to TMPDIR
-    sed -i -e "s#${WORKDIR}##g" ${B}/__cmrc_depthai-resources/intermediate/depthai-bootloader-fwp-0.0.28.tar.xz.cpp
-    #QA Issue: File /usr/src/debug/depthai-core-ros/2.26.1/__cmrc_depthai-resources/intermediate/depthai-device-fwp-24a3b465b979de3f69410cd225914d8bd029f3ba.tar.xz.cpp in package depthai-core-ros-src contains reference to TMPDIR
-    sed -i -e "s#${WORKDIR}##g" ${B}/__cmrc_depthai-resources/intermediate/depthai-device-fwp-24a3b465b979de3f69410cd225914d8bd029f3ba.tar.xz.cpp
+    sed -i -e "s#${WORKDIR}##g" ${B}/__cmrc_depthai-resources/intermediate/depthai-bootloader-fwp-${DEPTHAI_BOOTLOADER_VERSION}.tar.xz.cpp
+    #QA Issue: File /usr/src/debug/depthai-core-ros/2.26.1/__cmrc_depthai-resources/intermediate/depthai-device-fwp-9ed7c9ae4c232ff93a3500a585a6b1c00650e22c.tar.xz.cpp in package depthai-core-ros-src contains reference to TMPDIR
+    sed -i -e "s#${WORKDIR}##g" ${B}/__cmrc_depthai-resources/intermediate/depthai-device-fwp-${DEPTHAI_DEVICE_SIDE_COMMIT}.tar.xz.cpp
+
 }
 
 
@@ -215,3 +218,6 @@ RDEPENDS-${PN}-examples += "${PN}"
 #QA Issue: depthai-core-ros-dbg: found library in wrong location: /usr/bin/luxonis/examples/.debug/libutility.so depthai-core-ros-examples: found library in wrong location: /usr/bin/luxonis/examples/libutility.so [libdir]
 INSANE_SKIP:${PN}-dbg = "libdir"
 INSANE_SKIP:${PN}-examples = "libdir"
+
+#QA Issue: depthai-core-ros: ELF binary /usr/lib/libdepthai-core.so.2.26.1 has relocations in .text [textrel]
+INSANE_SKIP:${PN} = "textrel"

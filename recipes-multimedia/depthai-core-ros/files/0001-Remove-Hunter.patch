@@ -1,6 +1,6 @@
-From 3dbf42414e27e5e63669418bc1399a0804971b36 Mon Sep 17 00:00:00 2001
+From 33f49ea4cff4b547cd9d14b1afd22c8945af5027 Mon Sep 17 00:00:00 2001
 From: Stephen Street <stephen@redrocketcomputing.com>
-Date: Fri, 6 Dec 2024 15:30:52 -0800
+Date: Fri, 6 Dec 2024 19:34:04 -0800
 Subject: [PATCH] Remove Hunter
 
 Upstream-Status: Denied
@@ -10,38 +10,30 @@ Signed-off-by: Joel Winarske <joel.winarsk@gmail.com>
 ---
  CMakeLists.txt                  | 128 +++++++++++++++-----------------
  cmake/depthaiConfig.cmake.in    |   3 -
- cmake/depthaiDependencies.cmake |  28 ++-----
- examples/CMakeLists.txt         | 124 -------------------------------
+ cmake/depthaiDependencies.cmake |  35 ++-------
+ examples/CMakeLists.txt         | 127 +------------------------------
  tests/CMakeLists.txt            |  91 +++--------------------
- 5 files changed, 78 insertions(+), 296 deletions(-)
+ 5 files changed, 79 insertions(+), 305 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9594a4755..99b860d54 100644
+index be08685d7..af3bee243 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -8,7 +8,7 @@ endif()
- 
- set(HUNTER_SKIP_PACKAGE_nlohmann_json OFF)
- set(BUILD_SHARED_LIBS ON)
--set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-+#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
- 
- # Early options
- option(DEPTHAI_ENABLE_LIBUSB "Enable usage of libusb and interaction with USB devices" ON)
-@@ -37,12 +37,6 @@ else()
+@@ -49,13 +49,6 @@ else()
      message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
  endif()
  
 -include("cmake/HunterGate.cmake")
 -HunterGate(
--    URL "https://github.com/cpp-pm/hunter/archive/v0.23.322.tar.gz"
--    SHA1 "cb0ea1f74f4a2c49a807de34885743495fccccbe"
+-    URL "https://github.com/cpp-pm/hunter/archive/9d9242b60d5236269f894efd3ddd60a9ca83dd7f.tar.gz"
+-    SHA1 "16cc954aa723bccd16ea45fc91a858d0c5246376"
 -    LOCAL # Local config for dependencies
 -)
- 
+-
  # Move binary dir if windows, to shorten the path
  if(WIN32)
-@@ -305,6 +299,31 @@ else()
+     set(HUNTER_BINARY_DIR "${HUNTER_GATE_ROOT}/_bin" CACHE STRING "Hunter binary directory")
+@@ -328,6 +321,31 @@ else()
      target_compile_features(${TARGET_CORE_NAME} INTERFACE cxx_std_14)
  endif()
  
@@ -73,7 +65,7 @@ index 9594a4755..99b860d54 100644
  # First specify options
  option(DEPTHAI_BUILD_TESTS "Build tests" OFF)
  option(DEPTHAI_BUILD_EXAMPLES "Build examples - Requires OpenCV library to be installed" OFF)
-@@ -331,61 +350,23 @@ endif()
+@@ -354,61 +372,23 @@ endif()
  # Set constant
  set(DEPTHAI_RESOURCES_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/resources")
  
@@ -84,31 +76,28 @@ index 9594a4755..99b860d54 100644
 -# Include downloaders
 -include(DepthaiDownloader)                  # Depthai device binary downloader
 -include(DepthaiBootloaderDownloader)        # Depthai bootloader binary downloader
+-
+-
+-# depthai-shared enforce commit hash match if CI
+-if($ENV{CI})
+-    set(DEPTHAI_SHARED_COMMIT_HASH_ENFORCE ON)
+-    set(DEPTHAI_BOOTLOADER_SHARED_COMMIT_HASH_ENFORCE ON)
+-endif()
+-
 +#
 +# Stage external download
 +#
 +message(STATUS "Making: ${DEPTHAI_RESOURCES_OUTPUT_DIR}")
 +file(MAKE_DIRECTORY ${DEPTHAI_RESOURCES_OUTPUT_DIR})
  
-+message(STATUS "Copying: ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_BOOTLOADER_FILENAME}")
-+file(COPY ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_BOOTLOADER_FILENAME}
-+    DESTINATION ${DEPTHAI_RESOURCES_OUTPUT_DIR})
- 
--# depthai-shared enforce commit hash match if CI
--if($ENV{CI})
--    set(DEPTHAI_SHARED_COMMIT_HASH_ENFORCE ON)
--    set(DEPTHAI_BOOTLOADER_SHARED_COMMIT_HASH_ENFORCE ON)
--endif()
-+    message(STATUS "Copying: ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_DEVICE_SIDE_FILENAME}")
-+file(COPY ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_DEVICE_SIDE_FILENAME}
-+    DESTINATION ${DEPTHAI_RESOURCES_OUTPUT_DIR})
- 
- 
 -# Then get the Depthai device side binaries (local or download)
 -if(DEPTHAI_CMD_PATH OR DEPTHAI_USB2_CMD_PATH OR DEPTHAI_USB2_PATCH_PATH)
 -    # At least one of the paths is set. include binaries locally
 -    message(STATUS "Using local Depthai device side binaries...")
--
++message(STATUS "Copying: ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_BOOTLOADER_FILENAME}")
++file(COPY ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_BOOTLOADER_FILENAME}
++    DESTINATION ${DEPTHAI_RESOURCES_OUTPUT_DIR})
+ 
 -    DepthaiLocal(
 -        PATCH_ONLY ${DEPTHAI_USB2_PATCH_ONLY_MODE}
 -        "${DEPTHAI_RESOURCES_OUTPUT_DIR}"            # Output folder
@@ -117,7 +106,10 @@ index 9594a4755..99b860d54 100644
 -        "${DEPTHAI_USB2_CMD_PATH}"                  # depthai-usb2.cmd
 -        "${DEPTHAI_USB2_PATCH_PATH}"                # depthai-usb2-patch.patch
 -    )
--
++    message(STATUS "Copying: ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_DEVICE_SIDE_FILENAME}")
++file(COPY ${DEPTHAI_FWP_DL_PATH}/${DEPTHAI_FWP_DEVICE_SIDE_FILENAME}
++    DESTINATION ${DEPTHAI_RESOURCES_OUTPUT_DIR})
+ 
 -else()
 -    # No user specified paths, download from server
 -    message(STATUS "Downloading Depthai device side binaries from server...")
@@ -133,7 +125,7 @@ index 9594a4755..99b860d54 100644
 -    )
 -endif()
 -list(APPEND RESOURCE_COMPILED_FILES ${DEPTHAI_RESOURCE_LIST})
--
+ 
 -# Add bootloader
 -DepthaiBootloaderDownload(
 -    "${DEPTHAI_BOOTLOADER_SHARED_COMMIT_HASH}" "${DEPTHAI_BOOTLOADER_SHARED_COMMIT_HASH_ENFORCE}"
@@ -148,7 +140,7 @@ index 9594a4755..99b860d54 100644
  
  message(STATUS "LIST OF RESOURCE COMPILED FILES: ${RESOURCE_COMPILED_FILES}")
  
-@@ -456,15 +437,14 @@ target_link_libraries(${TARGET_CORE_NAME}
+@@ -479,12 +459,11 @@ target_link_libraries(${TARGET_CORE_NAME}
      PRIVATE
          XLink
          Threads::Threads
@@ -158,15 +150,20 @@ index 9594a4755..99b860d54 100644
          archive_static
          spdlog::spdlog
 -        ZLIB::zlib
+-        ghcFilesystem::ghc_filesystem
 +        z
  )
+ 
+ if(DEPTHAI_ENABLE_CURL)
+@@ -496,7 +475,6 @@ if(DEPTHAI_ENABLE_CURL)
+ endif()
  
  # Add compile & CMake definitions
 -set(DEPTHAI_DEVICE_VERSION "${DEPTHAI_DEVICE_SIDE_COMMIT}")
  target_compile_definitions(${TARGET_CORE_NAME}
      PRIVATE
          # Add depthai-device version
-@@ -560,6 +540,26 @@ if(DEPTHAI_OPENCV_SUPPORT)
+@@ -592,6 +570,26 @@ if(DEPTHAI_OPENCV_SUPPORT)
              target_clangformat_setup(${TARGET_OPENCV_NAME} "")
          endif()
  
@@ -193,7 +190,7 @@ index 9594a4755..99b860d54 100644
          # Add to list of targets to export and install
          list(APPEND targets_to_export ${TARGET_OPENCV_NAME})
  
-@@ -719,19 +719,15 @@ configure_file("cmake/${PROJECT_NAME}Dependencies.cmake" ${PROJECT_NAME}Dependen
+@@ -751,19 +749,15 @@ configure_file("cmake/${PROJECT_NAME}Dependencies.cmake" ${PROJECT_NAME}Dependen
  write_basic_package_version_file(${PROJECT_NAME}ConfigVersion.cmake VERSION ${PROJECT_VERSION} COMPATIBILITY AnyNewerVersion)
  
  # Configure config file (one for exporting build directory, one for installation)
@@ -213,7 +210,7 @@ index 9594a4755..99b860d54 100644
  endif()
  
  # Export to CMake registry if specified
-@@ -758,8 +754,6 @@ if(DEPTHAI_INSTALL)
+@@ -790,8 +784,6 @@ if(DEPTHAI_INSTALL)
      install(DIRECTORY "${DEPTHAI_SHARED_3RDPARTY_INCLUDE}/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${DEPTHAI_SHARED_3RDPARTY_HEADERS_PATH}")
      # Install depthai-bootloader-shared public headers
      install(DIRECTORY "${DEPTHAI_BOOTLOADER_SHARED_PUBLIC_INCLUDE}/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
@@ -223,10 +220,10 @@ index 9594a4755..99b860d54 100644
      if(NOT DEPTHAI_BINARIES_RESOURCE_COMPILE)
          install(DIRECTORY "${DEPTHAI_RESOURCES_OUTPUT_DIR}/" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
 diff --git a/cmake/depthaiConfig.cmake.in b/cmake/depthaiConfig.cmake.in
-index 98309545b..bcae1a18c 100644
+index 0c7d60332..43b407fba 100644
 --- a/cmake/depthaiConfig.cmake.in
 +++ b/cmake/depthaiConfig.cmake.in
-@@ -7,9 +7,6 @@ set(DEPTHAI_ENABLE_BACKWARD @DEPTHAI_ENABLE_BACKWARD@)
+@@ -9,9 +9,6 @@ set(DEPTHAI_ENABLE_CURL @DEPTHAI_ENABLE_CURL@)
  # Specify that this is config mode (Called by find_package)
  set(CONFIG_MODE TRUE)
  
@@ -237,10 +234,10 @@ index 98309545b..bcae1a18c 100644
  include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Dependencies.cmake")
  
 diff --git a/cmake/depthaiDependencies.cmake b/cmake/depthaiDependencies.cmake
-index 771cffbdb..2508f4b63 100644
+index d6bb55735..22fe00875 100644
 --- a/cmake/depthaiDependencies.cmake
 +++ b/cmake/depthaiDependencies.cmake
-@@ -9,42 +9,24 @@ if(CONFIG_MODE)
+@@ -9,48 +9,23 @@ if(CONFIG_MODE)
      set(_QUIET "QUIET")
  else()
      set(DEPTHAI_SHARED_LIBS ${BUILD_SHARED_LIBS})
@@ -264,6 +261,12 @@ index 771cffbdb..2508f4b63 100644
 -    if(DEPTHAI_PCL_SUPPORT)
 -        hunter_add_package(jsoncpp)
 -    endif()
+-
+-    if(DEPTHAI_ENABLE_CURL)
+-        hunter_add_package(CURL)
+-        hunter_add_package(cpr)
+-    endif()
+-    hunter_add_package(ghc_filesystem)
 +    find_package(nlohmann_json)
 +    find_package(jsoncpp)
  endif()
@@ -281,15 +284,23 @@ index 771cffbdb..2508f4b63 100644
      # libarchive for firmware packages
      find_package(archive_static ${_QUIET} CONFIG REQUIRED)
 -    find_package(lzma ${_QUIET} CONFIG REQUIRED)
-+
      # ZLIB for compressing Apps
 -    find_package(ZLIB CONFIG REQUIRED)
 +    find_package(ZLIB REQUIRED)
  
      # spdlog for library and device logging
      find_package(spdlog ${_QUIET} CONFIG REQUIRED)
+@@ -69,7 +44,7 @@ if(NOT CONFIG_MODE OR (CONFIG_MODE AND NOT DEPTHAI_SHARED_LIBS))
+         find_package(CURL ${_QUIET} CONFIG REQUIRED)
+         find_package(cpr ${_QUIET} CONFIG REQUIRED)
+     endif()
+-    find_package(ghc_filesystem ${_QUIET} CONFIG REQUIRED)
++    find_package(ghc_filesystem ${_QUIET} REQUIRED)
+ endif()
+ 
+ # Add threads (c++)
 diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
-index f3c0762b8..9b2e31b73 100644
+index f1455eabd..cebbef290 100644
 --- a/examples/CMakeLists.txt
 +++ b/examples/CMakeLists.txt
 @@ -96,130 +96,6 @@ endfunction()
@@ -423,6 +434,20 @@ index f3c0762b8..9b2e31b73 100644
  ## message(STATUS "Location of test1.data: ${test1_data}")
  
  # bootloader
+@@ -304,7 +180,7 @@ dai_add_example(video_mobilenet MobileNet/video_mobilenet.cpp ON OFF)
+ dai_add_example(webcam_mobilenet MobileNet/webcam_mobilenet_example.cpp OFF OFF)
+ 
+ target_compile_definitions(camera_mobilenet_sync PRIVATE BLOB_PATH="${mobilenet_blob}")
+-target_compile_definitions(rgb_mobilenet PRIVATE BLOB_PATH="${mobilenet_blob}"  ON)
++target_compile_definitions(rgb_mobilenet PRIVATE BLOB_PATH="${mobilenet_blob}")
+ target_compile_definitions(rgb_mobilenet_4k PRIVATE BLOB_PATH="${mobilenet_5shaves_blob}")
+ target_compile_definitions(mono_mobilenet PRIVATE BLOB_PATH="${mobilenet_blob}")
+ target_compile_definitions(video_mobilenet PRIVATE BLOB_PATH="${mobilenet_8shaves_blob}" VIDEO_PATH="${construction_vest}")
+@@ -421,3 +297,4 @@ target_compile_definitions(cast_diff PRIVATE BLOB_PATH="${diff_model}")
+ dai_add_example(spatial_tiny_yolo_tof_v3 SpatialDetection/spatial_tiny_yolo_tof.cpp OFF OFF)
+ dai_add_example(spatial_tiny_yolo_tof_v4 SpatialDetection/spatial_tiny_yolo_tof.cpp OFF OFF)
+ target_compile_definitions(spatial_tiny_yolo_tof_v3 PRIVATE BLOB_PATH="${tiny_yolo_v3_blob}")
++target_compile_definitions(spatial_tiny_yolo_tof_v4 PRIVATE BLOB_PATH="${tiny_yolo_v4_blob}")
 diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
 index 89fe6f3fc..b1aa1207b 100644
 --- a/tests/CMakeLists.txt
